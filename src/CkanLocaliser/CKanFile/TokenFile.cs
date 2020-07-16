@@ -58,9 +58,9 @@ namespace CkanLocaliser
 		private ITokeniser Tokeniser;
 
 		//		private list<string> File; // = new List<string> ();
-		public string Name
+		public string FilePath
 		{
-			get { return Tokeniser.Name; }
+			get { return Tokeniser.FilePath; }
 		}
 
 		public List<TokenFile.Line> File { get; set; } = new List<TokenFile.Line>();
@@ -111,11 +111,17 @@ namespace CkanLocaliser
 				}
 			}
 		}
-		
+
 
 
 		/// <summary>
-		/// A line from a file decomposed into tokens it always ends in EOL or EOF.
+		/// A line from a file decomposed into tokens, when read it always ends in EOL or EOF.  
+		/// 
+		/// ***WARNING WARNIGN DANGER WILL ROBINSON***
+		/// When the file is read EVERY LINE object ends with EOL or EOF and there is never an EOL mid Line Object.
+		/// When later modifying the data structure outside this class that is not a requirement at all.
+		/// Do not think that EOL ending line objects is a permanent part of the contract. Its not. 
+		/// Only that it comes out of read file that way.
 		/// </summary>
 		public class Line
 		{
@@ -129,8 +135,8 @@ namespace CkanLocaliser
 		/// </summary>
 		public class TokenObject
 		{
-			public string WhiteSpace { get; private set; }
-			public string theToken { get; private set; }
+			public string WhiteSpace { get;  set; }
+			public string theToken { get;  set; }
 
 			/// <summary>
 			/// broad classes of token objects
@@ -173,7 +179,7 @@ namespace CkanLocaliser
 
 		public class Cursor
         {
-			TokenFile TokFile { get; set; }
+			public TokenFile TokFile { get; set; }
 			public int LineNo { get; set; } = 0;
 			public int TokNo { get; set; } = 0;
 
@@ -219,6 +225,21 @@ namespace CkanLocaliser
 				TokFile = t;
 				Echo = echo;
 			}
+
+			public Cursor(TokenFile t, int LNo, int TNo)
+			{
+				TokFile = t;
+				LineNo = LNo;
+				TokNo = TNo;
+				Echo = false;
+			}
+
+			public void setPosition(int LNo, int TNo)
+            {
+				LineNo = LNo;
+				TokNo = TNo;
+			}
+
 		}
 
 

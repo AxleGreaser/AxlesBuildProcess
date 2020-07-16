@@ -1,0 +1,59 @@
+{
+    "spec_version": "v1.4",
+    "identifier": "LocalFMRSContinued",
+    "name": "Local: Flight Manager for Reusable Stages (FMRS) Continued",
+    "abstract": "Local:FMRS lets you jump back and forth in time.  It generates save points after separating controllable probes, ship, landers, ...  ",
+    "author":[
+        "Axlegreaser",
+        "linuxgurugamer"
+    ],
+    "version": "1.2.9.1",
+    "ksp_version_min": "1.8.0",
+    "ksp_version_max": "1.8.1",
+    "license": "MIT",
+    "provides": [
+        "FMRSContinued"
+    ],
+    "conflicts": [
+        {
+            "name": "FMRSContinued"
+        }
+    ],
+    "resources": {
+        "homepage": "https://youtu.be/ub82Xb1C8os",
+        "spacedock": "https://youtu.be/ub82Xb1C8os",
+        "repository": "https://youtu.be/ub82Xb1C8os",
+        "x_screenshot": "https://youtu.be/ub82Xb1C8os"
+    },
+    "tags": [
+        "plugin"
+    ],
+    "depends": [
+        {
+            "name": "ModuleManager"
+        },
+        {
+            "name": "RecoveryController"
+        },
+        {
+            "name": "ToolbarController"
+        },
+        {
+            "name": "ClickThroughBlocker"
+        }
+    ],
+    "install": [
+        {
+            "find": "FMRS",
+            "install_to": "GameData"
+        }
+    ],
+    "download": "file:///T:/test/File/Location/TheMod.zip",
+    "download_size": 9999,
+    "download_hash": {
+        "sha1": "F550FBBEF92224DD32E1E0D045BAA8C95EF45343",
+        "sha256": "D51D322B8F68FCDE25FCF4334327C0B86AAE0A65E9B2B70B1B03ECC7761AFD2C"
+    },
+    "download_content_type": "application/zip",
+    "x_generated_by": "CkanLocaliser"
+}

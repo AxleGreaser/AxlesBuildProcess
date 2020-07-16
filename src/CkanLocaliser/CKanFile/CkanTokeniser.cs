@@ -15,7 +15,7 @@ namespace CkanLocaliser
         public TokenObject ReadToken();
         public bool SomeTokenIllegal { get; set; }
 
-        abstract public string Name { get; set; }
+        abstract public string FilePath { get; set; }
     }
 
     class CkanTokeniser : ITokeniser
@@ -23,13 +23,13 @@ namespace CkanLocaliser
 
         public bool SomeTokenIllegal { get; set; }
 
-        public string Name { get; set; }
+       // public string Name { get; set; }
 
         StringBuilder wsWork = new StringBuilder(20);
         StringBuilder tokWork = new StringBuilder(200);
 
         private StreamReader strm;
-        public string FilePath { get; private set; }
+        public string FilePath { get;  set; }
         public bool Exists { get; private set; }
 
         public bool AllowSlashN { get; set; }  = false;

@@ -1,14 +1,10 @@
 To Do
 
-Does the dfile IO accept what range of UTF8 and then faithfully echo it as the exact same bytes.
+Does the file IO accept what range of UTF8 and then faithfully echo it as the exact same bytes.
 
 Similarly how faithful is it with various /r /n /r /r /n /n patterns?
 Also what is a new line anyway.
 
-CKanLocaliser  Validate FileName
-CKanLocaliser  Validate DirectoryName
-
-Validates The FileName or every *.ckan file recursively in the directory tree. 
 
 Currently every file in the ckan repository passes the test.
 

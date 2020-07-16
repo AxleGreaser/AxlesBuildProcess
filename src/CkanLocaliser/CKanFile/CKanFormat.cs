@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Text;
 using System.Threading;
 
@@ -13,22 +14,32 @@ namespace CkanLocaliser
     /// </summary>
     class CKanFormat
     {
-        public bool AllowEOLs { get; set; } = false;
+        /// <summary> Allows upto MaxXXXX Extra or Missing EOL to happen</summary>
+        public bool AllowEOLs { get; set; } = false;  // Possible Command line option (do check for any hard coded overrides).
+
+        /// <summary> Count of expected Eols that were missing </summary>
         public int EOLMissedCount { get; set; } = 0;
-        public int MaxMissedCount { get; set; } = 14; // yeah some files is the repo are somewhat badly formatted by hand
+        /// <summary> MaxEols that can be missing </summary>
+        public int MaxMissedCount { get; set; } = 6; // 14; // yeah some files is the repo are somewhat badly formatted by hand they can need up to 14 to pass.
+        // Lots of non pretty printed lines like "author" : [ "FooName" ], 
+        /// <summary> Count of unexpected Eols that were extra </summary>
         public int EOLExtraCount { get; set; } = 0;
+        /// <summary> MaxEols that can be extra </summary>
         public int MaxExtraCount { get; set; } = 4;
 
-        List<NameValueData> Required;
+        /// <summary> List of Every "NameField" string in the file   NameField : ValueField </summary>
+        public List<NameCursorData> Level1Name = new List<NameCursorData>();
 
-        TokenFile TokFile { get; set;  }
+        public TokenFile TokFile { get; set;  }
 
-        bool FileIsValid = true;
 
-        TokenFile.Cursor Curs = null;
+        public TokenFile.Cursor Curs = null;
 
         int Level = 0; // 0 is outside first {
-
+        /// <summary>
+        /// Not used yet
+        /// </summary>
+        bool FileIsValid = true; 
 
 
         public CKanFormat(TokenFile t)
@@ -54,7 +65,9 @@ namespace CkanLocaliser
         /// <returns>returns true if the file is sufficiently valid for our purposes.</returns>
         public bool validation(bool echo=false)
         {
+            CkanLocaliserClass.DoingWhat.Push("Validation");
             // reset parser state.    
+            Level1Name.Clear();
             FileIsValid = true;
             Level = 0;
             AllowEOLs = true;
@@ -78,9 +91,13 @@ namespace CkanLocaliser
                 expectToken(TokenCategory.tokEOF); // may have leading spaces.
             } catch (FormatException fe)
             {
+                Console.WriteLine($"While Doing : {CkanLocaliserClass.WhatString()} ");
                 Console.WriteLine(fe.Cause);
+                FileIsValid = false;
+                CkanLocaliserClass.DoingWhat.Pop();
                 return false;
             }
+            CkanLocaliserClass.DoingWhat.Pop();
             return true;
         }
 
@@ -93,10 +110,12 @@ namespace CkanLocaliser
                 expectToken(TokenCategory.tokEOL);
             }
             expectToken("{", TokenCategory.Token);  // This one is known by the caller to be "{" but for simplcity/encapsualtion we check.
+            Level++;
             expectToken(TokenCategory.tokEOL);
             parseListNV();
             expectToken(TokenCategory.tokEOL);
             expectToken("}", TokenCategory.Token);
+            Level--;
             return true;
         }
 
@@ -109,10 +128,12 @@ namespace CkanLocaliser
                 expectToken(TokenCategory.tokEOL); 
             }
             expectToken("[", TokenCategory.Token); // This one is known by the caller to be "{" but for simplcity/encapsualtion we check.
+            Level++;
             expectToken(TokenCategory.tokEOL);
             parseListVals();
             expectToken(TokenCategory.tokEOL);
             expectToken("]", TokenCategory.Token);
+            Level--;
             return true;
         }
 
@@ -137,6 +158,11 @@ namespace CkanLocaliser
                 }
                 if (Curs.TokenObj.isCategory(TokenCategory.String))
                 {  // next token is of form "ascii"  good enough for us.
+                    if (Level==1)
+                    {  // We are at level 1 of the file inside only thre opening {
+                        Level1Name.Add(new NameCursorData(this));
+                    }
+
                     expectToken(TokenCategory.String);  // Eat 1 name string
                     expectToken(":", TokenCategory.Token);
                     if (AllowEOLs && EOLExtraCount < MaxExtraCount && isToken(TokenCategory.tokEOL))
@@ -147,14 +173,14 @@ namespace CkanLocaliser
                     bool Ret = parseValue();
                     if (Ret!= true)
                     {
-                        throw new FormatException($"Fatal Format Error in {TokFile.Name}: \n\t Expected a Value  got <{Curs.TokenObj.theToken}>.");
+                        throw new FormatException($"Fatal Format Error in {TokFile.FilePath}: \n\t Expected a Value  got <{Curs.TokenObj.theToken}>.");
                     }
                 } else
                 {
                     if (EmptyNVisOk == false)
                     {
                         // Note may say <> if it hits either EOl or EOF or Illgl or ..? .. TODO: ok?
-                        throw new FormatException($"Fatal Format Error in {TokFile.Name}: \n\t Expected NAme:Value Pair got <{Curs.TokenObj.theToken}>.");
+                        throw new FormatException($"Fatal Format Error in {TokFile.FilePath}: \n\t Expected NAme:Value Pair got <{Curs.TokenObj.theToken}>.");
                     }
                 }
                 if (!Curs.TokenObj.isCategory(TokenCategory.Token) || !Curs.TokenObj.theToken.Equals(","))
@@ -167,7 +193,7 @@ namespace CkanLocaliser
                 expectToken(TokenCategory.tokEOL);     // Eat required EOL
                 EmptyNVisOk = false;                 // If we got a "," require an NV
             }
-            throw new FormatException($"Fatal Format Error in {TokFile.Name}:\n\t  UnExpected <EOF> in {{ nameValueList }}.");
+            throw new FormatException($"Fatal Format Error in {TokFile.FilePath}:\n\t  UnExpected <EOF> in {{ nameValueList }}.");
 
         }
 
@@ -191,7 +217,7 @@ namespace CkanLocaliser
                     if (EmptyVisOk == false)
                     {
                         // Note may say <> if it hits either EOl or EOF or Illgl or ..? .. TODO: ok?
-                        throw new FormatException($"Fatal Format Error in {TokFile.Name}: \n\t Expected NAme:Value Pair got <{Curs.TokenObj.theToken}>.");
+                        throw new FormatException($"Fatal Format Error in {TokFile.FilePath}: \n\t Expected NAme:Value Pair got <{Curs.TokenObj.theToken}>.");
                     }
                 }
                 if (!Curs.TokenObj.isCategory(TokenCategory.Token) || !Curs.TokenObj.theToken.Equals(","))
@@ -204,7 +230,7 @@ namespace CkanLocaliser
                 expectToken(TokenCategory.tokEOL);     // Eat required EOL
                 EmptyVisOk = false;                 // If we got a "," require an NV
             }
-            throw new FormatException($"Fatal Format Error in {TokFile.Name}:\n\t  UnExpected <EOF> in {{ nameValueList }}.");
+            throw new FormatException($"Fatal Format Error in {TokFile.FilePath}:\n\t  UnExpected <EOF> in {{ nameValueList }}.");
 
 
 
@@ -260,54 +286,112 @@ namespace CkanLocaliser
             return Curs.TokenObj.TokenCategory == tc;
         }
 
-        bool expectToken (string tokStr, TokenCategory tc)
+        public bool expectToken (string tokStr, TokenCategory tc)
         {
             if (Curs.TokenObj.TokenCategory == tc && Curs.TokenObj.theToken.Equals(tokStr)  )
             {   // we match the category and the string     
                 return Curs.advance();
             }
-            throw new FormatException($"Fatal Format Error in {TokFile.Name}:\n\t Expected <{tokStr}:{tc}> got <{Curs.TokenObj.theToken}:{Curs.TokenObj.TokenCategory}>.");
+            throw new FormatException($"Fatal Format Error in {TokFile.FilePath}:\n\t Expected <{tokStr}:{tc}> got <{Curs.TokenObj.theToken}:{Curs.TokenObj.TokenCategory}>.");
             // return FileIsValid = false; 
         }
-        bool expectToken(TokenCategory tc)
+        public bool expectToken(TokenCategory tc)
         {
             if (Curs.TokenObj.TokenCategory == tc )
             {   // we match the category and dont care about the string.   
                 return Curs.advance();
             } 
             else if (AllowEOLs && EOLMissedCount < MaxMissedCount && (tc == TokenCategory.tokEOL))
-            {   // missing EOLs is deemed Ok
-                //dont eat the NON EOL token
+            {   // missing EXPECTED EOLs is deemed Ok
+                // If we ere called to expect an EOL and we havent seen more than the acceptable amount of them 
+                // okay ...  
+                // so dont eat the NON EOL token
                 EOLMissedCount = EOLMissedCount + 1;
                 return true;
             }
             tc.ToString();
 
-            throw new FormatException($"Fatal Format Error in {TokFile.Name}:\n\t Expected <{tc.ToString()}> got <{Curs.TokenObj.TokenCategory}>.");
+            throw new FormatException($"Fatal Format Error in {TokFile.FilePath}:\n\t At (L{Curs.LineNo}:T{Curs.TokNo}) Expected <{tc.ToString()}> got <{Curs.TokenObj.TokenCategory}>.");
             // return FileIsValid = false; 
         }
+        /// <summary>
+        /// This FUNCTION is NOT part of validation. Knowingthe files have already been having validated as a file other code is slacker about what it then accepts.
+        /// hence skip up to N EOLs. We are now trying to succeed to work on a validated (tried to fail and didn't) file.
+        /// </summary>
+        public void skipEOL()
+        {
+            while (Curs.TokenObj.TokenCategory == TokenCategory.tokEOL)
+            {
+                Curs.advance();
+            }
+        }
+
+
+        public bool hasANameField(string Name)
+        {
+            NameCursorData NameMarker = Level1Name.Find(x => x.Name == Name);
+            return NameMarker != null;
+        }
+
+        public TokenFile.Cursor MoveCursTo (string Name)
+        {
+            NameCursorData NameMarker = Level1Name.Find( x => x.Name == Name );
+            if (NameMarker == null) { throw new FormatException($"Fatal Error: Required Field Named \"{Name}\" is missing.", true); }
+            TokenFile.Cursor Curs = NameMarker.setCursorLocation(this);
+            if (Curs.TokenObj.theToken != Name)  {  throw new FormatException("name is not where it is Meant to be"); }
+
+
+            return Curs;
+        }
+
+        public bool isTokenTextUse(string S)
+        {
+            if (Curs.TokenObj.theToken.Equals(S) == true)
+            {
+                return expectToken(S, Curs.TokenObj.TokenCategory);
+            }
+            return false;
+        } 
+
     }
 
     public class FormatException : Exception
     {
         public string Cause { get; set;  }
+        public bool KnownReal { get; set; }
 
-        public FormatException(string s) { Cause = s; }
+        public FormatException(string s, bool knownReal = false) { Cause = s; KnownReal = knownReal;  }
     }
 
 
-    class NameValueData {
-        public int Count {get; set;} = 0;
-        public string Value { get; set; } = "";
+    class NameCursorData { 
+        
+        
         public string Name { get; set; }
-
-        public bool Required { get; set; }
-
-        NameValueData(string n, bool required)
+        /// <summary> How many times we have seen this deitnfier. </summary>
+ //       public int Count {get; set;} = 0;
+       
+        public int LineNo { get; set; }
+        public int TokenNo { get; set; }
+        public TokenFile TFile { get; set; }
+        public NameCursorData(CKanFormat Fmt)
         {
-            Name = n;
-            Required = required;
+            TFile = Fmt.Curs.TokFile;
+            Name = new string (Fmt.Curs.TokenObj.theToken); // make our our immuatble copy of it?
+            LineNo = Fmt.Curs.LineNo;
+            TokenNo = Fmt.Curs.TokNo;
         }
+
+        public TokenFile.Cursor setCursorLocation(CKanFormat Fmt)
+        {
+            Fmt.Curs.LineNo = LineNo;
+            Fmt.Curs.TokNo = TokenNo;
+            Fmt.TokFile = TFile;
+
+            return Fmt.Curs;
+        }
+
+
 
     } 
 
