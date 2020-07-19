@@ -12,4 +12,4 @@ Real soon now it will stop doing that and reject quite few of them. They are all
 One has two name value pairs on one line.
 Real Soon now the validator will reject the one that are visually dissimilar to standard NetKan formatted ones. (unless override command switches say otherwise.)
 
-
+Should TOC href links in Readme.md be relative links?

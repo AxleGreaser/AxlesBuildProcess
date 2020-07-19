@@ -1,7 +1,16 @@
 # AxlesBuildProcess
-TOC  
-[Purposeful Design limitations of CKANLocaliser](#Purposeful-Design-limitations-of-CKANLocaliser)
-  
+TOC this Doc  
+[Purposeful Design limitations of CKANLocaliser](#Purposeful-Design-limitations-of-CKANLocaliser)  
+TOC Other docs  
+(needs some rationalising :)  
+[Using CKanLocaliser](https://github.com/AxleGreaser/AxlesBuildProcess/blob/master/doc/CkanLoaliser.md)  
+[Using CKanLocaliser 2](https://github.com/AxleGreaser/AxlesBuildProcess/blob/master/doc/CkanLoaliserBuild.md)  
+[Devleoper Help](https://github.com/AxleGreaser/AxlesBuildProcess/blob/master/doc/DeveleporHelp.md)  
+[TODO list](https://github.com/AxleGreaser/AxlesBuildProcess/blob/master/doc/ToDo.md)  
+[Regression Test Data Structure](https://github.com/AxleGreaser/AxlesBuildProcess/blob/master/testData/testData.MD)  
+[Regression test Data Details](https://github.com/AxleGreaser/AxlesBuildProcess/blob/master/testData/SrcCkanFiles/Regression.md )
+
+
 -----  
   
 Definition of the Build process used by Axles repositories in [AxleGreaser(lnk)](https://github.com/AxleGreaser) 
