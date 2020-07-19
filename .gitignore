@@ -21,7 +21,9 @@ bld/
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
-testData/testOutput/*
+testData/testOutput/*.ckan
+testData/testOutput/hashes.txt
+
 
 #NUNIT
 *.VisualState.xml
