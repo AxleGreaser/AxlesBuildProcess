@@ -16,7 +16,7 @@ Currently CKANLocaliser only validates files as fitting my requirements/assumpti
 
 First: It's name is spelled in English not USian. <small><small><small>(Yes I've seen the Oxford English dictionary entry for Localize it did not recolour my judgement.)</small></small></small>
 
-Prohibited by design are things that would on visual inspection allow a *ckan* file to look Ok but actually not be. Such things include stronger restrictions on *whitespace*, where *json* has zero restrictions on whitespace. **Goal**: Basically if a *CkanLocaliser* valid file looks visually, to a human Okay, it is Okay. The are no sneaky name value pairs hiding at the ends of lines or anything. There are no weird **UTF8** chars that do things on your display you have never seen before.
+Prohibited by design are things that would on visual inspection allow a *ckan* file to look Ok but actually not be. Such things include stronger restrictions on *whitespace*, where *json* has zero restrictions on whitespace. **Goal**: Basically if a *CkanLocaliser* valid file looks visually, to a human Okay, it is Okay. The are no sneaky name value pairs hiding at the ends of lines or anything. There are no weird **UTF8** chars that do things on your display you have never seen before. Yes as a design choice ckan does allow all the charcters, this is developers tool. Functional trumps aesthetics. 
 
 I am still in the air on allowing arrays with a trailing comma and hence missing values. I don't like that. but. Seems like a common/frequent 'error'.  EG: `"author": [AxleGreaser,]`  
 
@@ -24,7 +24,7 @@ Basically *CkanLocaliser* is coded with the if it is not required it is loudly d
 **Rule**: invisible or possibly invisible, hence conceivably deceptive stuff is illegal. ASCII <127 >=32 is good + \n \r \t. (\x0B and \x0C but only under sufferance until I get grumpy and kill them too.)
 
 ### legal chars
-As such lots of legal to *ckan* characters are currently outlawed for CKANlocaliser. It will be trivial to make them legal if that becomes a ***useful*** requirement. Changing them all (all n bytes of a UTF8) to # seems ... reasonable. # is visible.  
+As such lots of legal to *ckan* utf8 characters are currently outlawed for CKANlocaliser. It will be trivial to make them legal if that becomes a ***useful*** requirement. Changing them all (all n bytes of a UTF8) to # seems ... reasonable. # is visible.  
 The purpose of `CkanLocaliser` is to produce functional files not maximally pretty (in the GUI) ones.
 
 
