@@ -277,13 +277,13 @@ namespace CkanLocaliser
                                 MatchesEntry = false;
                             }
                             // We are here  <conflicts> : <[>  <{> [...] >here<  <name> <:> <value> [...] <}>
-                            bar.expectToken(TokenCategory.String);  // No EOLs
+                            bar.expectToken(TokenCategory.Strung);  // No EOLs
                             bar.expectToken(":",TokenCategory.Token); // No EOLs
                             if (bar.Curs.TokenObj.theToken.Equals(OldIdentifier) == false)
                             {
                                 MatchesEntry = false;
                             }
-                            bar.expectToken(TokenCategory.String);
+                            bar.expectTokenType('U');
                             bar.skipEOL(); // skips all EOLS and WS
                             // ending a list with <,> is apprently OK ish?
                             // whatever if our validation step didnt balk we accept it here.
@@ -328,9 +328,9 @@ namespace CkanLocaliser
                     TokenFile.Line L = bar.Curs.Line;
                     L.TheLine.Add(new TokenFile.TokenObject(p2.IndentationHack , "{", TokenCategory.Token, (int)'{'));
                     L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
-                    L.TheLine.Add(new TokenFile.TokenObject(p2.IndentationHack + "    ", "\"name\"", TokenCategory.String, (int)'"'));
+                    L.TheLine.Add(new TokenFile.TokenObject(p2.IndentationHack + "    ", "\"name\"", TokenCategory.Strung, (int)'A'));
                     L.TheLine.Add(new TokenFile.TokenObject("", ":", TokenCategory.Token, (int)':'));
-                    L.TheLine.Add(new TokenFile.TokenObject(" ", OldIdentifier, TokenCategory.String, (int)'"'));
+                    L.TheLine.Add(new TokenFile.TokenObject(" ", OldIdentifier, TokenCategory.Strung, (int)'A'));
                     L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
                     L.TheLine.Add(new TokenFile.TokenObject(p2.IndentationHack , "}", TokenCategory.Token, (int)'}'));
                     L.TheLine.Add(new TokenFile.TokenObject("", ",", TokenCategory.Token, (int)','));
@@ -342,15 +342,15 @@ namespace CkanLocaliser
             {  // Deal with the case where we just append a new Conflicts statement
                 CkanLocaliserClass.DoingWhat.Push("Adding_Conflicts");
                 TokenFile.Line L = bar.Curs.Line;
-                L.TheLine.Add(new TokenFile.TokenObject(p1.IndentationHack, "\"conflicts\"", TokenCategory.String, (int)'"'));
+                L.TheLine.Add(new TokenFile.TokenObject(p1.IndentationHack, "\"conflicts\"", TokenCategory.Strung, (int)'A'));
                 L.TheLine.Add(new TokenFile.TokenObject("", ":", TokenCategory.Token, (int)':'));
                 L.TheLine.Add(new TokenFile.TokenObject(" ", "[", TokenCategory.Token, (int)'['));
                 L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
                 L.TheLine.Add(new TokenFile.TokenObject(p1.IndentationHack + "    ", "{", TokenCategory.Token, (int)'{'));
                 L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
-                L.TheLine.Add(new TokenFile.TokenObject(p1.IndentationHack + "        ", "\"name\"", TokenCategory.String, (int)'"'));
+                L.TheLine.Add(new TokenFile.TokenObject(p1.IndentationHack + "        ", "\"name\"", TokenCategory.Strung, (int)'A'));
                 L.TheLine.Add(new TokenFile.TokenObject("", ":", TokenCategory.Token, (int)':'));
-                L.TheLine.Add(new TokenFile.TokenObject(" ", OldIdentifier, TokenCategory.String, (int)'"'));
+                L.TheLine.Add(new TokenFile.TokenObject(" ", OldIdentifier, TokenCategory.Strung, (int)'A'));
                 L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
                 L.TheLine.Add(new TokenFile.TokenObject(p1.IndentationHack + "    ", "}", TokenCategory.Token, (int)'}'));
                 L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
@@ -437,11 +437,11 @@ namespace CkanLocaliser
                         // Not strictly required but this code is now more like most of the otehr edit code  see reuse the white space code for why thats good diea.
                         bar.expectToken("[", TokenCategory.Token);
                         // we are here <[> >here< <EOL> 
-                        L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack + "    ", p.valueToAdd, TokenCategory.String, (int)'"'));
+                        L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack + "    ", p.valueToAdd, TokenCategory.Strung, (int)'U'));
                         L.TheLine.Add(new TokenFile.TokenObject("", ",", TokenCategory.Token, (int)','));
                         L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
                         // we are here <"author"> <:> <[> >here< <EOL> <Author> <,> <EOL>  
-                        L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack + "    ", ExistingAuthor, TokenCategory.String, (int)'"'));
+                        L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack + "    ", ExistingAuthor, TokenCategory.Strung, (int)'U'));
                         // nope no comma here L.TheLine.Add(new TokenFile.TokenObject("", ",", TokenCategory.Token, (int)','));
                         L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
                         // we are here <"author"> <:> <[> >here< <EOL> <Author> <,> <EOL> <ExistingAuthor> <,> <EOL> 
@@ -453,7 +453,7 @@ namespace CkanLocaliser
                     } 
                     else
                     {
-                        bar.expectToken(p.valueToAdd, TokenCategory.String);
+                        bar.expectToken(p.valueToAdd, TokenCategory.Strung);
                         bar.expectToken(",", TokenCategory.Token);
                         CheckForEOLorThrow(bar);
                     }
@@ -502,7 +502,7 @@ namespace CkanLocaliser
                         }
                         // Nope it some other thing that the mod  "provides"
 
-                        bar.expectToken(TokenCategory.String); // skip it eitehr way
+                        bar.expectToken(TokenCategory.Strung); // skip it eitehr way
                         NumOfIdentifiers++; //count them
                         bar.skipEOL(); // skips all EOLS and WS
                         if (bar.Curs.TokenObj.theToken.Equals(",") == false)
@@ -547,7 +547,7 @@ namespace CkanLocaliser
                         // where the optional <,> is added only if there is  follwing identifier in the array.
                         CheckForEOLorThrow(bar); // out of an abundance of caution. Check again.
                         TokenFile.Line L = bar.Curs.Line;
-                        L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack, p.valueToAdd, TokenCategory.String, (int)'"'));
+                        L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack, p.valueToAdd, TokenCategory.Strung, (int)'U'));
                         if (NumOfIdentifiers > 0)
                         {
                             //  it was NOT <"provides"> <:> <[> <]> it did have at ldast one idetifier, so we need a comma 
@@ -593,7 +593,7 @@ namespace CkanLocaliser
                 }
                 else
                 { // if is not a <[> it needs to be a single license string (or a single string abstract)
-                    bar.expectToken(TokenCategory.String);
+                    bar.expectToken(TokenCategory.Strung);
                 }
                 // Now we require a <,> after that name:value pair followed by an <EOL>
                 bar.skipEOL();
@@ -602,11 +602,11 @@ namespace CkanLocaliser
                 // We are here <"license"> <:> {one_of String or Array} >here< <EOL>   (or equiv but for <"abstract">)
                 // Now we add  <IndentationHack:"provides"> <:> <OldIdentifier> <,> <EOL>
                 TokenFile.Line L = bar.Curs.Line;
-                L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack, p.listToAddItTo, TokenCategory.String, (int)'"'));
+                L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack, p.listToAddItTo, TokenCategory.Strung, (int)'A'));
                 L.TheLine.Add(new TokenFile.TokenObject("", ":", TokenCategory.Token, (int)':'));
                 L.TheLine.Add(new TokenFile.TokenObject(" ", "[", TokenCategory.Token, (int)'['));
                 L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
-                L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack + "    ", p.valueToAdd, TokenCategory.String, (int)'"'));
+                L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack + "    ", p.valueToAdd, TokenCategory.Strung, (int)'U'));
                 L.TheLine.Add(new TokenFile.TokenObject(bar.Curs.TokenObj.WhiteSpace, "", TokenCategory.tokEOL, (int)'\n'));
                 L.TheLine.Add(new TokenFile.TokenObject(p.IndentationHack, "]", TokenCategory.Token, (int)']'));
                 L.TheLine.Add(new TokenFile.TokenObject("", ",", TokenCategory.Token, (int)','));
@@ -655,11 +655,11 @@ namespace CkanLocaliser
             while (bar.Curs.TokenObj.theToken.Equals("}") == false )
             {   // For every resource field remove them all.
                 bar.skipEOL(); // skips all EOLS and WS
-                bar.expectToken(bar.Curs.TokenObj.theToken, TokenCategory.String); //advance over the ":"  NO EOLS allowed
+                bar.expectToken(bar.Curs.TokenObj.theToken, TokenCategory.Strung); //advance over the "name"  
                 bar.expectToken(":", TokenCategory.Token); //advance over the ":"  NO EOLS allowed
                 // We are now pointed as are resource field of some name we dont care what ... blow it up
                 bar.Curs.TokenObj.theToken = "\"https://youtu.be/ub82Xb1C8os\"";
-                bar.expectToken(bar.Curs.TokenObj.theToken, TokenCategory.String);
+                bar.expectToken(bar.Curs.TokenObj.theToken, TokenCategory.Strung);
                 if (bar.Curs.TokenObj.theToken.Equals(",") ) {
                     bar.expectToken(",", TokenCategory.Token);
                 }
@@ -686,22 +686,22 @@ namespace CkanLocaliser
                 if (doSha1 & bar.Curs.TokenObj.theToken.Equals("\"sha1\""))
                 {
                     doSha1 = false;
-                    bar.expectToken("\"sha1\"", TokenCategory.String); //advance over the ":"  NO EOLS allowed
+                    bar.expectToken("\"sha1\"", TokenCategory.Strung); //advance over the ":"  NO EOLS allowed
                     bar.expectToken(":", TokenCategory.Token); //advance over the ":"  NO EOLS allowed
                     S = "\"" + SHA1 + "\"";
                     bar.Curs.TokenObj.theToken = S;
-                    bar.expectToken(S, TokenCategory.String);  // yes we expect the value we just set to be there.
+                    bar.expectToken(S, TokenCategory.Strung);  // yes we expect the value we just set to be there.
                 } else if (doSha256 & bar.Curs.TokenObj.theToken.Equals("\"sha256\"")) {
                     doSha256 = false;
-                    bar.expectToken("\"sha256\"", TokenCategory.String); //advance over the ":"  NO EOLS allowed
+                    bar.expectToken("\"sha256\"", TokenCategory.Strung); //advance over the ":"  NO EOLS allowed
                     bar.expectToken(":", TokenCategory.Token); //advance over the ":"  NO EOLS allowed
                     S = "\"" + SHA256 + "\"";
                     bar.Curs.TokenObj.theToken = S;
-                    bar.expectToken(S, TokenCategory.String);  // yes we expect the value we just set to be there.
+                    bar.expectToken(S, TokenCategory.Strung);  // yes we expect the value we just set to be there.
                 }
                 else
                 {  //We reached named value pair that is not Sha1 or Sha256... ignore it?
-                    bar.expectToken(TokenCategory.String); // eat it
+                    bar.expectToken(TokenCategory.Strung); // eat it
                     bar.expectToken(":", TokenCategory.Token); //advance over the ":"  NO EOLS allowed
                     bar.expectToken(bar.Curs.TokenObj.TokenCategory); // eat the value whatever string number whatever it is.
                 }

@@ -30,8 +30,13 @@ namespace CkanLocaliser
 
         private StreamReader strm;
         public string FilePath { get;  set; }
-        public bool Exists { get; private set; }
-
+        public bool Exists
+        {
+            get { return strm != null; }
+        }
+        /// <summary>
+        /// the two character sequence "\n" is allowed in Strings if true.
+        /// </summary>
         public bool AllowSlashN { get; set; }  = false;
 
 
@@ -40,12 +45,11 @@ namespace CkanLocaliser
             FilePath = filePath;
             // Check file exists
             FileInfo fi = new FileInfo(FilePath);
-            Exists = fi.Exists;
+            bool Exists = fi.Exists;
             SomeTokenIllegal = false;
             if (Exists)
             {
                 strm = new StreamReader(FilePath, Encoding.UTF8);
-
             }
             else
             {
@@ -55,7 +59,7 @@ namespace CkanLocaliser
             }
         }
 
-        enum TokState { Start, InString, hasEscape, End }
+//        enum TokState { Start, InString, hasEscape, End }
 
         public TokenObject ReadToken()
         {
@@ -69,7 +73,7 @@ namespace CkanLocaliser
             //    TokState state = Start;
             int cc;
             string ws;
-            String T;
+            string T;
             TokenCategory cat;
             char C = (char)stripWhiteSpace(out ws);
             switch (C)
@@ -84,8 +88,8 @@ namespace CkanLocaliser
 
                 case '"':
                     // Start of a string 
-                    cat = parseString(out T, '"');
-                    return new TokenObject(ws, T, cat, C);
+                    TokenObject t = parseString(ws,'"');
+                    return t;
                 case ':':
                 case '{':
                 case '}':
@@ -117,6 +121,9 @@ namespace CkanLocaliser
         /// Now   true and false are legal tokens but we cant know whether it going to to turn out to be truck until we get there
         /// So we do the best we can and parse the next C like token then check if it is true or false.
         /// hence LastDitch() 
+        /// All bare words that are not the literals true or false are unknown tokens and willresult in an File format error ecventually at the lexical level.
+        /// AKA even though we know for certain it will be an error as th okensier we just dont throw.
+        /// We just gve back token category the lexical analyser will always barf at.
         /// </summary>
         private TokenObject LastDitch(string ws)
         {
@@ -144,7 +151,13 @@ namespace CkanLocaliser
         }
 
 
-
+        /// <summary>
+        /// ckan File can only contain integrs and decimals not Floats so we only parse inetegrs and decimals
+        /// All char sequences yield valid tokenised results. the text  <1.4.5.6> will tokenise first as <1.4> then as <.5> then as <.6>
+        /// The lexical parser will decide that is not a valid sequence for ckan file, but it will tokenise.
+        /// </summary>
+        /// <param name="t">returns the literal chars in this token</param>
+        /// <returns>the token category Decimal or Number as appropriate</returns>
         private TokenCategory parseNumber(out string t)
         {
             tokWork.Append((char)strm.Read()); // append opening Quote
@@ -159,19 +172,70 @@ namespace CkanLocaliser
             return hasDec ? TokenCategory.Decimal : TokenCategory.Number;
         }
 
-
-        private TokenCategory parseString(out string t, char term)
+        /// <summary>
+        /// Parses a string terminated by double quotes.
+        /// Illegal things are:  most \ sequences except \\
+        /// \n is allowed only if expressly permitted.
+        /// </summary>
+        /// <param name="t">returns the literal chars in this token including both quotes </param>
+        /// <param name="term">the char we expect to terminate the string always a " </param>
+        /// <returns>TokenCategory.String or TokenCategory.tokIllegal if bad thigns happen</returns>
+        private TokenObject parseString(string ws,char term)
         {
             tokWork.Append((char)strm.Read()); // append opening Quote
             int C=0;
-           
+            string t;
+            int ret = 'A'; // A is for Ascci
             while ((C = strm.Peek()) != term)
             {
-                if (C == -1)
-                {  // unexpected EOF inside string
-                    t = tokWork.ToString();
+                bool UnKnownUTF8 = (C >= 127    // is non vanilla ascii
+                                &&  C != 0xFEFF   // except FEFF BOM ... 'ZERO WIDTH NO-BREAK SPACE' <﻿> <<yes there is one there... arrow past it carefully.
+                                && C!= 0x2019  // Right single quotaion mark <’>
+                                && C!= 0xA0   // No break Space  < >
+                                && C!= 0xD7   // 'MULTIPLICATION SIGN' <×> 
+                                && C!= 0x2014 //  'EM DASH'  <—>
+                                && C!= 0xFC   // 'LATIN SMALL LETTER U WITH DIAERESIS'  <ü> 
+                                && C != 0x201C // 'LEFT DOUBLE QUOTATION MARK'          <“>
+                                && C != 0x201D // 'RIGHT DOUBLE QUOTATION MARK'         <”>
+                                && C != 0xE8   // 'LATIN SMALL LETTER E WITH GRAVE'     <è>
+                                && C != 0xC7   // 'LATIN CAPITAL LETTER C WITH CEDILLA' <Ç>
+                                && C != 0xFF1F // 'FULLWIDTH QUESTION MARK'             <？>
+                                && C != 0x2018 // 'LEFT SINGLE QUOTATION MARK'          <‘>
+                                && C != 0xFF01 // 'FULLWIDTH EXCLAMATION MARK'          <！>
+                                && C != 0xE9   // 'LATIN SMALL LETTER E WITH GRAVE'     <é>
+                                && C != 0xFF08 // 'FULLWIDTH LEFT PARENTHESIS'          <（>
+                                && C != 0xFF09 // 'FULLWIDTH RIGHT PARENTHESIS'          <）>
+                                && C != 0x4E07 // 'ten thousand; innumerable'           <万>
+                                && C != 0x6237 // 'door; family'                        <户>
+                                && C != 0x515A // 'political party, gang, faction'      <党>
+                                && C != 0x51FA // 'go out, send out; stand; produce'    <出>
+                                && C != 0x54C1 // 'article, product, commodity'         <品>
+                                && C != 0xFF0C // 'FULLWIDTH COMMA'                     <，>
+                                && C != 0x5FC5 // 'surely, most certainly; must'        <必>
+                                && C != 0x5C5E // 'class, category, type; belong to'    <属>
+                                && C != 0x7CBE // 'essence; semen; spirit'              <精>
+                                && C != 0xB3   // 'SUPERSCRIPT THREE'                   <³>
+                                && C != 0xE7   // 'LATIN SMALL LETTER C WITH CEDILLA'   <ç>
+                                && C != 0xE3   // 'LATIN SMALL LETTER A WITH TILDE'     <ã>
+                                && C != 0xEA   // 'LATIN SMALL LETTER E WITH CIRCUMFLEX' <ê>
+                                && C != 0xF5   // 'LATIN SMALL LETTER O WITH TILDE'     <õ>
+                                && C != 0xED   // 'LATIN SMALL LETTER I WITH ACUTE'     <í>
+                                && C != 0xB4   // 'ACUTE ACCENT'                        <´>
+                                && C != 0xB0   // 'DEGREE SIGN'                         <°>
+                               );
+                bool BadChar = (C == -1) ||   // is EOF
+                               (C < 32 && !Char.IsWhiteSpace((char)C)) ||  // is control Char
+                               UnKnownUTF8;
+                if (UnKnownUTF8)
+                {
+                    ret = 'U';  // U is for UTF8
+                }
+
+                if (BadChar)
+                {  // unexpected EOF inside string or other unexpected control char or non ascii char 
+                    t = tokWork.ToString() + "<" + C.ToString() + ":" + C.ToString("X") + ">";
                     SomeTokenIllegal = true;
-                    return TokenCategory.tokIllegal;
+                    return new TokenObject(ws ,t,TokenCategory.tokIllegal, C==-1?-1:7);
                 }
                 if (C == '\\') 
                 {
@@ -181,7 +245,7 @@ namespace CkanLocaliser
                     {
                         t = tokWork.ToString();
                         SomeTokenIllegal = true;
-                        return TokenCategory.tokIllegal;
+                        return new TokenObject(ws, t, TokenCategory.tokIllegal, -1);
                         ;
                     }
                     if (C != '\\' && C != '\"'  && (C!='n' || AllowSlashN == false))
@@ -189,7 +253,7 @@ namespace CkanLocaliser
                         // keep parsing but all \x sequences except \\ are currently defined illegal
                         SomeTokenIllegal = true;
                         t = tokWork.ToString(); 
-                        return TokenCategory.tokIllegal;
+                        return new TokenObject(ws, t, TokenCategory.tokIllegal, 7); ;
                     }
                 }
                 tokWork.Append((char)strm.Read());
@@ -197,7 +261,7 @@ namespace CkanLocaliser
             tokWork.Append((char)strm.Read());
             t = tokWork.ToString();
 
-            return TokenCategory.String; ;
+            return new TokenObject(ws, t, TokenCategory.Strung, ret); ;
         }
 
         /// <summary>

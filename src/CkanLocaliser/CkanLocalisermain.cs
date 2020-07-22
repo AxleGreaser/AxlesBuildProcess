@@ -9,7 +9,7 @@ namespace CkanLocaliser
     {
         static int FileCount = 0;
         static int InValidCount = 0;
-        static bool DoPause = false;
+        static bool DoPause = true;
         /// <summary>
         /// Not used yet
         /// </summary>

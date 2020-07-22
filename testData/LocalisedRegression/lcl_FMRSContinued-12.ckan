@@ -5,7 +5,7 @@
     "abstract": "Local:FMRS lets you jump back and forth in time.  It generates save points after separating controllable probes, ship, landers, ...  ",
     "author": [ 
         "Axlegreaser", 
-			"linuxgurugamer" 
+			"linuxgurugamer", 
 		],
     "version": "1.2.9.1",
     "ksp_version_min": "1.8.0",
@@ -15,9 +15,9 @@
 				"FMRSContinued", 
 		],
 		"conflicts": [
-		    {
-		        "name": "FMRSContinued"
-		    },
+		    { 
+						"name" : "FMRSContinued" 
+				},
 		    { 
 						"name" : "FooBar" 
 				},

@@ -25,11 +25,11 @@ namespace CkanLocaliser
             string path = "../../testData/"; 
             string srcpath =  "SrcCkanFiles/";
             string outpath = "testOutput/";
-            string[] aFnames =  { "FMRSContinued-Actual.ckan", "933369F49440B3CA75DD40CFAD3B93CDCC6F7ED6",
-                                  "FMRSContinued-11.ckan", "B658CAB284E1736A08A75ECEFD4AE8D4A6C80FBD",
-                                  "FMRSContinued-12.ckan", "1EF52DDAC670BE07241F78D8F9C31C0B16F74AA4",
-                                  "FMRSContinued-13.ckan", "C5147DB1A2F4C7D00587867F789B986F5BE7A5EB",
-                                  "FMRSContinued-14.ckan", "B43041158049206C703A493434EE2BADBABD32AF" 
+            string[] aFnames =  { "FMRSContinued-Actual.ckan", "F3CC22038D887BBFAAB4850BD7152B698688CE2A",
+                                  "FMRSContinued-11.ckan", "059682B8D845C2BFD2FAE5A2349750BA22DC7155",
+                                  "FMRSContinued-12.ckan", "5C29310698EEBA13338464940E4D9C0B173BB331",
+                                  "FMRSContinued-13.ckan", "F6544F70C140104BBC0E23AC593A47114C5DDFCA",
+                                  "FMRSContinued-14.ckan", "636ACB032CA7B7A0F19BB8DFA4CCD135D0983502"
             };
 
 

@@ -20,7 +20,7 @@ namespace CkanLocaliser
         /// <summary> Count of expected Eols that were missing </summary>
         public int EOLMissedCount { get; set; } = 0;
         /// <summary> MaxEols that can be missing </summary>
-        public int MaxMissedCount { get; set; } = 6; // 14; // yeah some files is the repo are somewhat badly formatted by hand they can need up to 14 to pass.
+        public int MaxMissedCount { get; set; } = 14; // 14; // yeah some files is the repo are somewhat badly formatted by hand they can need up to 14 to pass.
         // Lots of non pretty printed lines like "author" : [ "FooName" ], 
         /// <summary> Count of unexpected Eols that were extra </summary>
         public int EOLExtraCount { get; set; } = 0;
@@ -156,14 +156,14 @@ namespace CkanLocaliser
                     EOLExtraCount = EOLExtraCount + 1;
                     expectToken(TokenCategory.tokEOL);
                 }
-                if (Curs.TokenObj.isCategory(TokenCategory.String))
+                if (Curs.TokenObj.isCategory(TokenCategory.Strung) && Curs.TokenObj.TokenType == 'A' )
                 {  // next token is of form "ascii"  good enough for us.
                     if (Level==1)
                     {  // We are at level 1 of the file inside only thre opening {
                         Level1Name.Add(new NameCursorData(this));
                     }
 
-                    expectToken(TokenCategory.String);  // Eat 1 name string
+                    expectToken(TokenCategory.Strung);  // Eat 1 name string  all 'A' types are also strings
                     expectToken(":", TokenCategory.Token);
                     if (AllowEOLs && EOLExtraCount < MaxExtraCount && isToken(TokenCategory.tokEOL))
                     {
@@ -252,8 +252,8 @@ namespace CkanLocaliser
             bool FoundValue = false;
             switch (tcat)
             {
-                case TokenCategory.String:  // <ValueString>
-                    expectToken(TokenCategory.String);
+                case TokenCategory.Strung:  // <ValueString>
+                    expectToken(tcat);
                     FoundValue = true;
                     break;
                 case TokenCategory.Boolean:  // <ValueString>
@@ -295,13 +295,34 @@ namespace CkanLocaliser
             throw new FormatException($"Fatal Format Error in {TokFile.FilePath}:\n\t Expected <{tokStr}:{tc}> got <{Curs.TokenObj.theToken}:{Curs.TokenObj.TokenCategory}>.");
             // return FileIsValid = false; 
         }
+
+        public bool expectTokenType(int type)
+        {
+            int t;
+            if ((t=Curs.TokenObj.TokenType) == type)
+            {   // we match the category and dont care about the string.   
+                return Curs.advance();
+            }
+            else if (AllowEOLs && EOLMissedCount < MaxMissedCount && (type == '\n'))
+            {   // missing EXPECTED EOLs is deemed Ok
+                // If we ere called to expect an EOL and we havent seen more than the acceptable amount of them 
+                // okay ...  
+                // so dont eat the NON EOL token
+                EOLMissedCount = EOLMissedCount + 1;
+                return true;
+            }
+            ((char)type).ToString();
+
+            throw new FormatException($"Fatal Format Error in {TokFile.FilePath}:\n\t At (L{Curs.LineNo}:T{Curs.TokNo}) Expected Type <{((char)type).ToString()}> got <{((char)t).ToString()}>.");
+            // return FileIsValid = false; 
+        }
+
         public bool expectToken(TokenCategory tc)
         {
             if (Curs.TokenObj.TokenCategory == tc )
             {   // we match the category and dont care about the string.   
                 return Curs.advance();
-            } 
-            else if (AllowEOLs && EOLMissedCount < MaxMissedCount && (tc == TokenCategory.tokEOL))
+            } else if (AllowEOLs && EOLMissedCount < MaxMissedCount && (tc == TokenCategory.tokEOL))
             {   // missing EXPECTED EOLs is deemed Ok
                 // If we ere called to expect an EOL and we havent seen more than the acceptable amount of them 
                 // okay ...  
